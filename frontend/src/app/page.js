@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
 export default function Home() {
   // Login States
   const [username, setUsername] = useState("");
@@ -61,7 +63,7 @@ export default function Home() {
   // NEW: Registration Function
   const handleRegister = async (e) => {
     e.preventDefault();
-    const response = await fetch("http://127.0.0.1:8000/api/register/", {
+    const response = await fetch(`${API_URL}/api/register/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -77,7 +79,7 @@ export default function Home() {
   };
 const handleLogin = async (e) => {
     e.preventDefault();
-    const response = await fetch("http://127.0.0.1:8000/api/token/", {
+    const response = await fetch(`${API_URL}/api/token/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -112,7 +114,7 @@ const handleLogin = async (e) => {
 
   const fetchWorkspaces = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch("http://127.0.0.1:8000/api/workspaces/", {
+    const response = await fetch(`${API_URL}/api/workspaces/`, {
       headers: { "Authorization": `Bearer ${token}` },
     });
     
@@ -130,7 +132,7 @@ const handleLogin = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("access_token");
     
-    const response = await fetch("http://127.0.0.1:8000/api/workspaces/", {
+    const response = await fetch(`${API_URL}/api/workspaces/`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -148,7 +150,7 @@ const handleLogin = async (e) => {
   const fetchTeam = async () => {
     const token = localStorage.getItem("access_token");
     // Note: Assuming your Django backend has a standard user endpoint here
-    const response = await fetch("http://127.0.0.1:8000/api/users/", {
+    const response = await fetch(`${API_URL}/api/users/`, {
       method: "GET",
       headers: { "Authorization": `Bearer ${token}` },
     });
@@ -164,7 +166,7 @@ const handleLogin = async (e) => {
     const token = localStorage.getItem("access_token");
     
     // Fetch comments linked to this specific task
-    const response = await fetch(`http://127.0.0.1:8000/api/comments/?task=${task.id}`, {
+    const response = await fetch(`${API_URL}/api/comments/?task=${task.id}`, {
       headers: { "Authorization": `Bearer ${token}` },
     });
     
@@ -184,7 +186,7 @@ const handleLogin = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("access_token");
     
-    const response = await fetch("http://127.0.0.1:8000/api/comments/", {
+    const response = await fetch(`${API_URL}/api/comments/`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -209,7 +211,7 @@ const handleLogin = async (e) => {
     const token = localStorage.getItem("access_token");
     
     // Note: Assuming your Django backend has an endpoint for tenant invites
-    const response = await fetch("http://127.0.0.1:8000/api/invite/", {
+    const response = await fetch(`${API_URL}/api/invite/`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -233,7 +235,7 @@ const handleLogin = async (e) => {
   // NEW: Function to securely fetch projects from Django
   const fetchProjects = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch("http://127.0.0.1:8000/api/projects/", {
+    const response = await fetch(`${API_URL}/api/projects/`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -253,7 +255,7 @@ const handleLogin = async (e) => {
 
   const fetchTasks = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch("http://127.0.0.1:8000/api/tasks/", {
+    const response = await fetch(`${API_URL}/api/tasks/`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -274,7 +276,7 @@ const handleLogin = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("access_token");
 
-    const response = await fetch("http://127.0.0.1:8000/api/projects/", {
+    const response = await fetch(`${API_URL}/api/projects/`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -302,7 +304,7 @@ const handleLogin = async (e) => {
 
   const token = localStorage.getItem("access_token");
 
-  const response = await fetch("http://127.0.0.1:8000/api/tasks/", {
+  const response = await fetch(`${API_URL}/api/tasks/`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -329,7 +331,7 @@ const handleLogin = async (e) => {
 
   const handleDeleteTask = async (taskId) => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch(`http://127.0.0.1:8000/api/tasks/${taskId}/`, {
+    const response = await fetch(`${API_URL}/api/tasks/${taskId}/`, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${token}` },
     });
@@ -344,7 +346,7 @@ const handleLogin = async (e) => {
     const token = localStorage.getItem("access_token");
     
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/create-checkout-session/", {
+      const response = await fetch(`${API_URL}/api/create-checkout-session/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -376,7 +378,7 @@ const handleLogin = async (e) => {
     if (task.status === "TO_DO") nextStatus = "IN_PROGRESS";
     else if (task.status === "IN_PROGRESS") nextStatus = "DONE";
 
-    const response = await fetch(`http://127.0.0.1:8000/api/tasks/${task.id}/`, {
+    const response = await fetch(`${API_URL}/api/tasks/${task.id}/`, {
       method: "PUT",
       headers: {
         "Authorization": `Bearer ${token}`,
