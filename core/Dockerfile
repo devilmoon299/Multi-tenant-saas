@@ -10,24 +10,20 @@ WORKDIR /app
 
 # 4. Install system-level dependencies for PostgreSQL
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev \
+    && apt-get install -y --no-install-recommends gcc libpq-dev curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # 5. Copy the requirements file and install Python packages
 COPY requirements.txt /app/
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-# 6. Install Gunicorn (the production web server)
-RUN pip install gunicorn
-
-# 7. Copy the rest of the Django project into the container
+# 6. Copy the rest of the Django project into the container
 COPY . /app/
 
-# 8. Expose port 8000 so the outside world can communicate with Django
+# 7. Expose default port
 EXPOSE 8000
 
-# 9. Start the server using Gunicorn instead of the development server
-# NOTE: Replace 'tracker_project' with the actual name of the folder containing your wsgi.py file
-CMD ["gunicorn", "tracker_project.wsgi:application", "--bind", "0.0.0.0:8000"]
+# 8. Start the server using Gunicorn binding to $PORT (or 8000)
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120"]

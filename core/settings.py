@@ -99,9 +99,11 @@ SIMPLE_JWT = {
 # Database
 # Priority 1: DATABASE_URL / INTERNAL_DATABASE_URL / EXTERNAL_DATABASE_URL (Render, Neon, Supabase, Railway)
 # Priority 2: Explicit DB_HOST or POSTGRES_HOST (Docker Compose)
-# Priority 3: SQLite fallback (Local dev without database container)
+# Priority 3: SQLite fallback (Local dev without database container or Render without linked DB)
 
 DATABASE_URL = os.getenv('DATABASE_URL') or os.getenv('INTERNAL_DATABASE_URL') or os.getenv('EXTERNAL_DATABASE_URL')
+IS_RENDER = os.getenv('RENDER') == 'true' or bool(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
+raw_host = os.getenv('DB_HOST') or os.getenv('POSTGRES_HOST')
 
 if DATABASE_URL and dj_database_url:
     DATABASES = {
@@ -112,14 +114,14 @@ if DATABASE_URL and dj_database_url:
             ssl_require=False if ('localhost' in DATABASE_URL or '127.0.0.1' in DATABASE_URL or '@db:' in DATABASE_URL) else (not DEBUG),
         )
     }
-elif os.getenv('DB_HOST') or os.getenv('POSTGRES_HOST'):
+elif raw_host and not (IS_RENDER and raw_host == 'db'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('DB_NAME') or os.getenv('POSTGRES_DB', 'saas_db'),
             'USER': os.getenv('DB_USER') or os.getenv('POSTGRES_USER', 'postgres'),
             'PASSWORD': os.getenv('DB_PASSWORD') or os.getenv('POSTGRES_PASSWORD', 'postgres_password_123'),
-            'HOST': os.getenv('DB_HOST') or os.getenv('POSTGRES_HOST', '127.0.0.1'),
+            'HOST': raw_host,
             'PORT': os.getenv('DB_PORT') or os.getenv('POSTGRES_PORT', '5432'),
         }
     }

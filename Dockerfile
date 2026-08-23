@@ -22,9 +22,8 @@ RUN pip install --upgrade pip \
 # 6. Copy the rest of the project files
 COPY . /app/
 
-# 7. Expose port 8000 for Django
+# 7. Expose default port
 EXPOSE 8000
 
-# 8. Start Django development server by default (with hot-reloading)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-
+# 8. Start production server binding to $PORT (set by Render/Cloud) or default to 8000
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120"]
