@@ -14,7 +14,10 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
-import dj_database_url
+try:
+    import dj_database_url
+except ImportError:
+    dj_database_url = None
 
 load_dotenv()
 
@@ -32,6 +35,11 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-t#o69&fng3-ts@(zh)w9ejbd96
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,backend,0.0.0.0,*').split(',') if host.strip()]
+
+# Add Render external hostname automatically if deployed on Render
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -89,17 +97,30 @@ SIMPLE_JWT = {
 
 
 # Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# Priority 1: DATABASE_URL / INTERNAL_DATABASE_URL / EXTERNAL_DATABASE_URL (Render, Neon, Supabase, Railway)
+# Priority 2: Explicit DB_HOST or POSTGRES_HOST (Docker Compose)
+# Priority 3: SQLite fallback (Local dev without database container)
 
-if os.getenv('POSTGRES_DB') or os.getenv('DB_NAME'):
+DATABASE_URL = os.getenv('DATABASE_URL') or os.getenv('INTERNAL_DATABASE_URL') or os.getenv('EXTERNAL_DATABASE_URL')
+
+if DATABASE_URL and dj_database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=False if ('localhost' in DATABASE_URL or '127.0.0.1' in DATABASE_URL or '@db:' in DATABASE_URL) else (not DEBUG),
+        )
+    }
+elif os.getenv('DB_HOST') or os.getenv('POSTGRES_HOST'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', os.getenv('POSTGRES_DB', 'saas_db')),
-            'USER': os.getenv('DB_USER', os.getenv('POSTGRES_USER', 'postgres')),
-            'PASSWORD': os.getenv('DB_PASSWORD', os.getenv('POSTGRES_PASSWORD', 'postgres_password_123')),
-            'HOST': os.getenv('DB_HOST', os.getenv('POSTGRES_HOST', 'db')),
-            'PORT': os.getenv('DB_PORT', os.getenv('POSTGRES_PORT', '5432')),
+            'NAME': os.getenv('DB_NAME') or os.getenv('POSTGRES_DB', 'saas_db'),
+            'USER': os.getenv('DB_USER') or os.getenv('POSTGRES_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD') or os.getenv('POSTGRES_PASSWORD', 'postgres_password_123'),
+            'HOST': os.getenv('DB_HOST') or os.getenv('POSTGRES_HOST', '127.0.0.1'),
+            'PORT': os.getenv('DB_PORT') or os.getenv('POSTGRES_PORT', '5432'),
         }
     }
 else:
@@ -109,13 +130,6 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-
-# Override default DB settings if a production URL is provided
-if 'DATABASE_URL' in os.environ:
-    DATABASES['default'] = dj_database_url.config(
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
 
 
 # Password validation
@@ -179,12 +193,21 @@ LOGIN_URL = 'login'
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 
-# --- CORS CONFIGURATION ---
-# For local development, allow Next.js (port 3000) to talk to Django
+# --- CORS & CSRF CONFIGURATION ---
+# Allow Next.js local development + Render deployments
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',') if origin.strip()
 ]
+
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True' if DEBUG else 'False').lower() in ('true', '1', 't')
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',') if origin.strip()
+]
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
+
 
 # --- DRF CONFIGURATION ---
 REST_FRAMEWORK = {
@@ -194,5 +217,5 @@ REST_FRAMEWORK = {
     )
 }
 
-STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
+STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', STRIPE_PUBLISHABLE_KEY)
 STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
