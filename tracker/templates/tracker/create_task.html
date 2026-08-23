@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ page_title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Force Django's raw form tags to match Bootstrap styling */
+        form p { margin-bottom: 1rem; }
+        
+        form label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-weight: 500; 
+        }
+        
+        form input, form textarea, form select { 
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            font-family: inherit;
+        }
+        
+        /* Give the description box some breathing room */
+        form textarea { min-height: 120px; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                
+                <div class="card shadow-sm">
+                   <div class="card-body p-4">
+                        <!-- Exactly one dynamic header -->
+                        <h2 class="card-title mb-4">{{ page_title }}</h2>
+                        
+                        <!-- MAIN FORM (Appears on all pages) -->
+                        <form method="POST">
+                            {% csrf_token %}
+                            
+                            <!-- THIS TAG DRAWS THE INPUTS! Do not delete it -->
+                            {{ form.as_p }}
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary">{{ button_text }}</button>
+                                <a href="{% url 'task_board' %}" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                        
+                        <!-- NEW COMMENTS SECTION START (Appears ONLY on Edit Task) -->
+                        {% if comment_form %}
+                        <hr class="my-5">
+                        <h4 class="mb-3">Comments</h4>
+                        
+                        <!-- Render existing comments -->
+                        <div class="mb-4">
+                            {% for comment in comments %}
+                                <div class="p-3 mb-2 bg-white border rounded shadow-sm">
+                                    <strong>{{ comment.author.username }}</strong> 
+                                    <small class="text-muted">{{ comment.created_at|date:"M d, Y h:i a" }}</small>
+                                    <p class="mb-0 mt-1">{{ comment.content }}</p>
+                                </div>
+                            {% empty %}
+                                <p class="text-muted">No comments yet. Be the first to start the discussion!</p>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Render the form to add a new comment -->
+                        <form method="POST">
+                            {% csrf_token %}
+                            {{ comment_form.as_p }}
+                            <div class="text-end mt-2">
+                                <button type="submit" name="comment_submit" class="btn btn-success">Post Comment</button>
+                            </div>
+                        </form>
+                        {% endif %}
+                        <!-- NEW COMMENTS SECTION END -->
+
+                    </div>
+
+                    </div>
+                </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

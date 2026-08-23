@@ -1,0 +1,17 @@
+# Environments & Secrets
+.env
+venv/
+env/
+
+# Python & Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+
+# Docker Data Volumes
+postgres_data/
+
+# Static Files
+staticfiles/

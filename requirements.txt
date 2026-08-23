@@ -1,0 +1,26 @@
+# Core Framework
+Django==6.0.7
+asgiref==3.12.1
+sqlparse==0.5.5
+tzdata==2026.3
+
+# Django REST Framework & Authentication
+djangorestframework==3.18.0
+djangorestframework-simplejwt==5.5.1
+PyJWT==2.13.0
+
+# CORS Headers
+django-cors-headers==4.9.0
+
+# Environment Variables & Configuration
+python-dotenv==1.2.2
+
+# Payment & Third-Party Integrations
+stripe==15.4.0
+requests==2.34.2
+
+# Production & Deployment (WSGI Server, PostgreSQL Driver & Static Files)
+gunicorn>=21.2.0
+psycopg2-binary>=2.9.9
+whitenoise[brotli]>=6.7.0
+

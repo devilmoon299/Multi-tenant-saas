@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - SaaS Platform</title>
+</head>
+<body>
+    <h2>Please Log In</h2>
+    <form method="post">
+        {% csrf_token %} <!-- Django requires this for security! -->
+        {{ form.as_p }}  <!-- This automatically renders the username/password fields -->
+        <button type="submit">Log In</button>
+    </form>
+</body>
+</html>
