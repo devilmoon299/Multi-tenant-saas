@@ -117,6 +117,8 @@ if DATABASE_URL and dj_database_url:
             ssl_require=False if ('localhost' in DATABASE_URL or '127.0.0.1' in DATABASE_URL or '@db:' in DATABASE_URL) else (not DEBUG),
         )
     }
+    db_h = DATABASES['default'].get('HOST', 'unknown')
+    print(f"--> [DATABASE] Successfully configured PostgreSQL (host: {db_h})")
 elif raw_host and not (IS_RENDER and raw_host == 'db'):
     DATABASES = {
         'default': {
@@ -128,6 +130,7 @@ elif raw_host and not (IS_RENDER and raw_host == 'db'):
             'PORT': os.getenv('DB_PORT') or os.getenv('POSTGRES_PORT', '5432'),
         }
     }
+    print(f"--> [DATABASE] Configured PostgreSQL from host var: {raw_host}")
 else:
     DATABASES = {
         'default': {
@@ -135,6 +138,10 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+    if IS_RENDER:
+        print("--> [DATABASE WARNING] Running on Render with temporary SQLite! DATABASE_URL is missing in Render Environment Variables.")
+    else:
+        print("--> [DATABASE] Running with local SQLite database.")
 
 
 # Password validation
