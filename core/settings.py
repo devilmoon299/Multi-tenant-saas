@@ -213,11 +213,13 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True' if DEBUG else 'False').lower() in ('true', '1', 't')
+CORS_ALLOWED_ORIGINS.append('https://multi-tenant-saas-peach.vercel.app')
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip() for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',') if origin.strip()
     https://multi-tenant-saas-peach.vercel.app,
 ]
+CSRF_TRUSTED_ORIGINS.append('https://multi-tenant-saas-peach.vercel.app')
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
